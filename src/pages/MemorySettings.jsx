@@ -12,11 +12,14 @@ const MemorySettings = () => {
         setError(null);
         try {
             const response = await fetch('/api/memory');
-            if (!response.ok) throw new Error('Failed to connect to memory server');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `Server error: ${response.status}`);
+            }
             const data = await response.json();
             setMemories(data);
         } catch (err) {
-            setError("Could not connect to the database. Make sure the backend server is running.");
+            setError(err.message || "Could not connect to the database. Make sure the backend server is running.");
         } finally {
             setLoading(false);
         }

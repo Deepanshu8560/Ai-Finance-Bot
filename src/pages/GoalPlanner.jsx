@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend
 } from 'recharts';
-import { Target, TrendingUp, Shield, Clock, CheckCircle, Loader, DollarSign } from 'lucide-react';
+import { Target, TrendingUp, Shield, Clock, CheckCircle, Loader, IndianRupee } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { generateGoalStrategy } from '../services/ai';
 
@@ -158,10 +158,10 @@ const GoalPlanner = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-6 text-white shadow-lg">
                                     <div className="flex items-center space-x-3 mb-2">
-                                        <DollarSign className="text-green-100" size={24} />
+                                        <IndianRupee className="text-green-100" size={24} />
                                         <h3 className="text-lg font-medium text-green-50">Monthly Savings</h3>
                                     </div>
-                                    <p className="text-4xl font-bold">${plan.monthly_savings_required}</p>
+                                    <p className="text-4xl font-bold">₹{plan.monthly_savings_required}</p>
                                     <p className="text-sm text-green-100 mt-2">Required to reach your goal in {formData.years} years</p>
                                 </div>
 

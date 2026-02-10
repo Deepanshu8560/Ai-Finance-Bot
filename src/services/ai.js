@@ -220,16 +220,16 @@ export const generateGoalStrategy = async (apiKey, { name, amount, years, risk }
         
         OUTPUT FORMAT (Strict JSON):
         {
-            "monthly_savings_required": 500,
-            "estimated_return_rate": "8%",
+            "monthly_savings_required": 5000,
+            "estimated_return_rate": "12%",
             "investment_split": [
-                {"type": "Equity (SIP)", "percentage": 60, "amount": 300, "color": "#8884d8"},
-                {"type": "Debt / FD", "percentage": 30, "amount": 150, "color": "#00C49F"},
-                {"type": "Gold / Cash", "percentage": 10, "amount": 50, "color": "#FFBB28"}
+                {"type": "Equity (SIP)", "percentage": 60, "amount": 3000, "color": "#8884d8"},
+                {"type": "Debt / FD", "percentage": 30, "amount": 1500, "color": "#00C49F"},
+                {"type": "Gold / Cash", "percentage": 10, "amount": 500, "color": "#FFBB28"}
             ],
             "strategy_logic": "Given the 5-year timeline and medium risk, a 60/40 equity-debt split balances growth with stability.",
             "recommendations": [
-                "Start a SIP of ₹2000 in an Index Fund.",
+                "Start a SIP of ₹3000 in an Index Fund.",
                 "Open a Recurring Deposit for the stable portion."
             ]
         }

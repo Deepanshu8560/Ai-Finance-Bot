@@ -188,7 +188,7 @@ const BudgetPlanner = () => {
                                                 <p className="text-xs text-gray-500 mt-1">{item.description}</p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-lg font-bold" style={{ color: item.color }}>${item.value}</p>
+                                                <p className="text-lg font-bold" style={{ color: item.color }}>₹{item.value}</p>
                                                 <p className="text-xs text-gray-400">Target</p>
                                             </div>
                                         </div>
