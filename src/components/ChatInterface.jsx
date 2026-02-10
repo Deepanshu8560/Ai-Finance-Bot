@@ -4,8 +4,10 @@ import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import SettingsModal from './SettingsModal';
 import { generateResponse } from '../services/ai';
+import { useAuth } from '../context/AuthContext';
 
 const ChatInterface = () => {
+    const { user, token } = useAuth();
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
@@ -29,6 +31,28 @@ const ChatInterface = () => {
         }
     }, []);
 
+    // Fetch Chat History on Load
+    useEffect(() => {
+        if (user && token) {
+            const fetchHistory = async () => {
+                try {
+                    const response = await fetch('/api/chat', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const history = await response.json();
+                        if (history.length > 0) {
+                            setMessages(history);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch chat history:", error);
+                }
+            };
+            fetchHistory();
+        }
+    }, [user, token]);
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -36,6 +60,22 @@ const ChatInterface = () => {
     useEffect(() => {
         scrollToBottom();
     }, [messages, isLoading]);
+
+    const saveMessageToDb = async (role, content) => {
+        if (!user || !token) return;
+        try {
+            await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ role, content })
+            });
+        } catch (error) {
+            console.error("Failed to save message:", error);
+        }
+    };
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -45,12 +85,11 @@ const ChatInterface = () => {
         setInput('');
         setIsLoading(true);
 
+        // Save User Message
+        saveMessageToDb('user', userMessage.content);
+
         try {
-            // Prepare history for AI (exclude current user message as it's passed separately, 
-            // but generateResponse wants history so we pass previous messages)
-            const history = messages.slice(1); // Skip welcome message if role is 'assistant' and index 0?
-            // Actually, passing full history including welcome message is fine if it aligns with context.
-            // But user might want fresh context. We'll pass all messages.
+            const history = messages;
 
             const responseText = await generateResponse(apiKey, messages, input);
 
@@ -60,6 +99,9 @@ const ChatInterface = () => {
             };
 
             setMessages(prev => [...prev, aiResponse]);
+
+            // Save AI Message
+            saveMessageToDb('assistant', aiResponse.content);
         } catch (error) {
             setMessages(prev => [...prev, {
                 role: 'assistant',

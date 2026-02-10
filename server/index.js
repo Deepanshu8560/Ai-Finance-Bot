@@ -65,6 +65,17 @@ const initDb = async () => {
             console.log("Added user_id column to user_memory");
         }
 
+        // 3. Create Messages Table
+        await pool.query(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        role VARCHAR(20) NOT NULL,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
         console.log("Database tables initialized");
     } catch (err) {
         console.error("Error initializing DB:", err);
@@ -201,6 +212,39 @@ app.delete('/api/memory', verifyToken, async (req, res) => {
     try {
         await pool.query('DELETE FROM user_memory WHERE user_id = $1', [req.userId]);
         res.json({ message: 'All memories cleared' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- CHAT HISTORY ROUTES (Protected) ---
+
+app.get('/api/chat', verifyToken, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT role, content FROM messages WHERE user_id = $1 ORDER BY created_at ASC', [req.userId]);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/chat', verifyToken, async (req, res) => {
+    const { role, content } = req.body;
+    try {
+        const result = await pool.query(
+            'INSERT INTO messages (user_id, role, content) VALUES ($1, $2, $3) RETURNING *',
+            [req.userId, role, content]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/chat', verifyToken, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM messages WHERE user_id = $1', [req.userId]);
+        res.json({ message: 'Chat history cleared' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

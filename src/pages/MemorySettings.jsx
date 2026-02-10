@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Database, Trash2, RefreshCw, Server, AlertTriangle } from 'lucide-react';
+import { Database, Trash2, RefreshCw, Server, AlertTriangle, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 const MemorySettings = () => {
+    const { token } = useAuth();
     const [memories, setMemories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const fetchMemories = async () => {
+        if (!token) return;
+
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/memory');
+            const response = await fetch('/api/memory', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error || `Server error: ${response.status}`);
@@ -26,12 +32,21 @@ const MemorySettings = () => {
     };
 
     useEffect(() => {
-        fetchMemories();
-    }, []);
+        if (token) {
+            fetchMemories();
+        } else {
+            // If no token, maybe clear memories or set error state?
+            // But component handles empty token with "Authentication Required" UI below.
+            setLoading(false);
+        }
+    }, [token]);
 
     const handleDelete = async (id) => {
         try {
-            await fetch(`/api/memory/${id}`, { method: 'DELETE' });
+            await fetch(`/api/memory/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             setMemories(memories.filter(m => m.id !== id));
         } catch (err) {
             console.error("Failed to delete memory", err);
@@ -41,7 +56,10 @@ const MemorySettings = () => {
     const handleClearAll = async () => {
         if (!window.confirm("Are you sure you want to forget everything? This cannot be undone.")) return;
         try {
-            await fetch('/api/memory', { method: 'DELETE' });
+            await fetch('/api/memory', {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             setMemories([]);
         } catch (err) {
             console.error("Failed to clear memories", err);
@@ -64,16 +82,33 @@ const MemorySettings = () => {
             </header>
 
             {error ? (
-                <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl flex items-center text-amber-800">
-                    <Server className="mr-4 flex-shrink-0" size={32} />
-                    <div>
-                        <h3 className="font-bold text-lg">Backend Not Connected</h3>
-                        <p className="mb-2">{error}</p>
-                        <p className="text-sm opacity-80">
-                            To enable memory, you must run the backend server:<br />
-                            <code className="bg-amber-100 px-2 py-1 rounded mt-1 inline-block">node server/index.js</code>
-                        </p>
-                    </div>
+                <div className={`p-6 rounded-2xl flex items-center ${error.includes('token') || error.includes('Unauthorized') ? 'bg-blue-50 border border-blue-200 text-blue-800' : 'bg-amber-50 border border-amber-200 text-amber-800'}`}>
+                    {error.includes('token') || error.includes('Unauthorized') ? (
+                        <div className="flex items-center w-full">
+                            <div className="mr-4 bg-blue-100 p-3 rounded-full">
+                                <Shield className="text-blue-600" size={32} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-lg">Authentication Required</h3>
+                                <p className="mb-2">You need to be logged in to access your memory settings.</p>
+                                <a href="/login" className="inline-block mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                                    Log In / Sign Up
+                                </a>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <Server className="mr-4 flex-shrink-0" size={32} />
+                            <div>
+                                <h3 className="font-bold text-lg">Backend Not Connected</h3>
+                                <p className="mb-2">{error}</p>
+                                <p className="text-sm opacity-80">
+                                    To enable memory, you must run the backend server:<br />
+                                    <code className="bg-amber-100 px-2 py-1 rounded mt-1 inline-block">node server/index.js</code>
+                                </p>
+                            </div>
+                        </>
+                    )}
                 </div>
             ) : (
                 <div className="space-y-6">
