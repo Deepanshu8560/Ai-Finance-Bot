@@ -4,7 +4,11 @@ import './index.css'
 import App from './App.jsx'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID";
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+if (!googleClientId) {
+  console.warn("VITE_GOOGLE_CLIENT_ID is not defined. Google Login may not work.");
+}
 
 class ErrorBoundary extends Component {
   constructor(props) {

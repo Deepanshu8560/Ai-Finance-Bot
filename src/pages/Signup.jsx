@@ -20,6 +20,7 @@ const Signup = () => {
             await googleLogin(credentialResponse.credential);
             navigate('/');
         } catch (err) {
+            console.error('Google Login Error:', err);
             setError('Google Login Failed');
         } finally {
             setLoading(false);
@@ -65,7 +66,10 @@ const Signup = () => {
                 <div className="flex justify-center mb-6">
                     <GoogleLogin
                         onSuccess={handleGoogleSuccess}
-                        onError={() => setError('Google Login Failed')}
+                        onError={(error) => {
+                            console.error('Google Login UI Error:', error);
+                            setError('Google Login Failed');
+                        }}
                         useOneTap
                         text="signup_with"
                     />
