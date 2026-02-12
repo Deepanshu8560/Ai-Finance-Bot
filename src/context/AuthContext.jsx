@@ -22,15 +22,28 @@ export const AuthProvider = ({ children }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error);
 
+            const contentType = response.headers.get("content-type");
+            if (!response.ok) {
+                let errorMessage = 'Login failed';
+                if (contentType && contentType.includes("application/json")) {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                } else {
+                    const textError = await response.text();
+                    console.error('Non-JSON error response:', textError);
+                }
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
             setToken(data.token);
             setUser(data.user);
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
             return data;
         } catch (error) {
+            console.error('Login Error:', error);
             throw error;
         }
     };
@@ -42,15 +55,28 @@ export const AuthProvider = ({ children }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password }),
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error);
 
+            const contentType = response.headers.get("content-type");
+            if (!response.ok) {
+                let errorMessage = 'Signup failed';
+                if (contentType && contentType.includes("application/json")) {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                } else {
+                    const textError = await response.text();
+                    console.error('Non-JSON error response:', textError);
+                }
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
             setToken(data.token);
             setUser(data.user);
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
             return data;
         } catch (error) {
+            console.error('Signup Error:', error);
             throw error;
         }
     };
@@ -62,15 +88,28 @@ export const AuthProvider = ({ children }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token: googleToken }),
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error);
 
+            const contentType = response.headers.get("content-type");
+            if (!response.ok) {
+                let errorMessage = 'Google Login failed';
+                if (contentType && contentType.includes("application/json")) {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                } else {
+                    const textError = await response.text();
+                    console.error('Non-JSON error response:', textError);
+                }
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
             setToken(data.token);
             setUser(data.user);
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
             return data;
         } catch (error) {
+            console.error('Google Login Error:', error);
             throw error;
         }
     };
